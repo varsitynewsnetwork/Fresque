@@ -400,7 +400,7 @@ class Fresque
                         $this->runtime['Redis']['host'] . ':' . $this->runtime['Redis']['port'],
                         $this->runtime['Redis']['database'],
                         $this->runtime['Redis']['namespace'],
-                        $this->runtime['Redis']['password']
+                        (isset($this->runtime['Redis']['password']) ? $this->runtime['Redis']['password'] : '')
                     )
                 );
 
@@ -495,7 +495,9 @@ class Fresque
             'REDIS_BACKEND=' . escapeshellarg($this->runtime['Redis']['host'] . ':' . $this->runtime['Redis']['port']) . " \\\n".
             'REDIS_DATABASE=' . escapeshellarg($this->runtime['Redis']['database']) . " \\\n".
             'REDIS_NAMESPACE=' . escapeshellarg($this->runtime['Redis']['namespace']) . " \\\n".
-            'REDIS_PASSWORD=' . escapeshellarg($this->runtime['Redis']['password']) . " \\\n".
+            (isset($this->runtime['Redis']['password']) ?
+                ('REDIS_PASSWORD=' . escapeshellarg($this->runtime['Redis']['password']))
+                : '') . " \\\n".
             'COUNT=' . 1 . " \\\n".
             'LOGHANDLER=' . escapeshellarg($this->runtime['Log']['handler']) . " \\\n".
             'LOGHANDLERTARGET=' . escapeshellarg($this->runtime['Log']['target']) . " \\\n".
@@ -722,7 +724,11 @@ class Fresque
                     $this->output->outputText($options->actionMessage . ' ' . $pid . ' ... ');
                 }
 
-
+                // we should only try to restart processes on the current host
+                if ($hostname != gethostname()) {
+                    $this->output->outputLine('Skip (different host)', 'default');
+                    continue;
+                }
 
                 $killResponse = $this->kill($options->signal, $pid);
                 $options->onSuccess($pid, (string)$worker);
@@ -1048,15 +1054,20 @@ class Fresque
 
         foreach ($this->runtime as $cat => $confs) {
             $this->output->outputLine('['.$cat.']', 'bold');
-            foreach ($this->runtime[$cat] as $name => $conf) {
-                if (!is_array($conf)) {
-                    $this->output->outputText('   '.$name . str_repeat(' ', 10 - strlen($name)));
-                    $this->output->outputLine($conf);
-                } else {
-                    $this->output->outputLine('   '.$name, 'highlight');
-                    foreach ($conf as $q => $o) {
-                        $this->output->outputText('      '.$q . str_repeat(' ', 10 - strlen($q)));
-                        $this->output->outputLine($o);
+            if (!is_array($this->runtime[$cat])) {
+                $this->output->outputText('   '.$cat . str_repeat(' ', 20 - strlen($cat)));
+                $this->output->outputLine($this->runtime[$cat]);
+            } else {
+                foreach ($this->runtime[$cat] as $name => $conf) {
+                    if (!is_array($conf)) {
+                        $this->output->outputText('   '.$name . str_repeat(' ', 20 - strlen($name)));
+                        $this->output->outputLine($conf);
+                    } else {
+                        $this->output->outputLine('   '.$name, 'highlight');
+                        foreach ($conf as $q => $o) {
+                            $this->output->outputText('      '.$q . str_repeat(' ', 20 - strlen($q)));
+                            $this->output->outputLine($o);
+                        }
                     }
                 }
             }
