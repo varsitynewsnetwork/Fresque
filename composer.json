@@ -27,6 +27,16 @@
     "suggest": {
         "chrisboulton/php-resque" : "PHP port of resque (Workers and Queueing)"
     },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url":  "https://github.com/varsitynewsnetwork/php-resque-ex.git"
+        },
+                {
+            "type": "vcs",
+            "url":  "https://github.com/varsitynewsnetwork/php-resque-ex-scheduler.git"
+        }
+    ],
     "support": {
     "email": "kami@kamisama.me",
     "issues": "https://github.com/kamisama/Fresque/issues",
