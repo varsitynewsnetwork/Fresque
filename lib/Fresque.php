@@ -38,7 +38,7 @@ class Fresque
     public $settings;
     public $runtime;
 
-    public $debug = false;
+    public $debugMessages = true;
 
     /**
      * @var Resque Classname
@@ -1400,7 +1400,7 @@ class Fresque
      */
     public function debug($string)
     {
-        if ($this->debug) {
+        if ($this->debugMessages) {
             $this->output->outputLine('[DEBUG] ' . $string, 'success');
         }
     }
